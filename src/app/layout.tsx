@@ -7,10 +7,14 @@ import { ThemeProvider } from "@mui/material";
 import { Provider } from "react-redux";
 import { store } from "./redux/store";
 import SocketProvider from "./socket/SocketProvider";
-
+import './globals.css';
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <head>
+<style>
+</style>
+      </head>
       <body>
         <AppRouterCacheProvider>
          

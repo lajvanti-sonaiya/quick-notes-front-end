@@ -89,6 +89,7 @@ const { loading } = useAppSelector((state) => state.note);
             select
             margin="normal"
             label="Category"
+            sx={{minWidth:200}}
             name="category"
             value={values.category}
             onChange={handleChange}

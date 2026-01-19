@@ -10,15 +10,17 @@ import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
 import { deleteNote, fetchNotes, updateNote } from "../redux/slices/note-slice";
 import NoteDialog from "./common/NoteDialog";
-import { Box } from "@mui/system";
+import { Box, flex, Grid } from "@mui/system";
 import {
   Button,
   FormControl,
   IconButton,
   InputAdornment,
   InputLabel,
+  Pagination,
   Select,
   TextField,
+  Typography,
 } from "@mui/material";
 import EditSquareIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -34,6 +36,7 @@ import { AppDispatch, RootState } from "@/types/notes/note-redux";
 import { TableColumn } from "@/types/components/note-table";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { DialogState } from "@/types/components/note-dialouge";
+import { truncate } from "../utills/turncate-text";
 
 const columns: TableColumn[] = [
   { id: "pin", label: "pin" },
@@ -59,12 +62,14 @@ const columns: TableColumn[] = [
 
 export default function NoteList() {
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [category, setCategory] = useState("");
-  const [search, setSearch] = useState("");
-
+  const [rowsPerPage, setRowsPerPage] = useState<number>(9);
+  const [category, setCategory] = useState<string>("");
+  const [search, setSearch] = useState<string>("");
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  
   const dispatch = useAppDispatch();
   const { notes, total } = useAppSelector((state: RootState) => state.note);
+  const totalPages = Math.ceil(total / rowsPerPage);
   const [dialougeData, setDialougeData] = useState<DialogState>({
     open: false,
     type: "create",
@@ -102,8 +107,11 @@ export default function NoteList() {
     dispatch(fetchNotes({ category, search, page, limit: rowsPerPage }));
   }, [category, page, rowsPerPage]);
 
+  console.log("hoveredIndex", hoveredIndex);
+
   return (
-    <>
+    <Box sx={{padding:4, display:"flex", flexDirection:
+      "column", gap:3}}>
       <NoteDialog
         open={dialougeData.open}
         type={dialougeData.type}
@@ -117,64 +125,55 @@ export default function NoteList() {
         }}
       />
 
-      <Paper
-        sx={{
-          width: "100%",
-          overflow: "hidden",
-          display: "flex",
-          flexDirection: "column",
-          gap: 2,
-        }}
-      >
-        <Box sx={{ display: "flex", justifyContent: "end", gap: 3 }}>
-          <TextField
-            size="small"
-            placeholder="Search notes..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            slotProps={{
-              input: {
-                endAdornment: (
-                  <InputAdornment position="end" sx={{ width: 20 }}>
-                    {search && (
-                      <IconButton size="small" onClick={() => setSearch("")}>
-                        <CloseIcon fontSize="small" />
-                      </IconButton>
-                    )}
-                  </InputAdornment>
-                ),
-              },
-            }}
-          />
+      <Box sx={{ display: "flex", justifyContent: "center", gap: 3}}>
+        <TextField
+          size="small"
+          placeholder="Search notes..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          slotProps={{
+            input: {
+              endAdornment: (
+                <InputAdornment position="end" sx={{ width: 20 }}>
+                  {search && (
+                    <IconButton size="small" onClick={() => setSearch("")}>
+                      <CloseIcon fontSize="small" />
+                    </IconButton>
+                  )}
+                </InputAdornment>
+              ),
+            },
+          }}
+        />
 
-          <FormControl size="small" sx={{ minWidth: 200 }}>
-            <InputLabel>Category</InputLabel>
-            <Select
-              value={category}
-              label="Category"
-              onChange={(e) => setCategory(e.target.value)}
-            >
-              <MenuItem value="">All</MenuItem>
-              <MenuItem value="work">Work</MenuItem>
-              <MenuItem value="personal">Personal</MenuItem>
-              <MenuItem value="ideas">Ideas</MenuItem>
-            </Select>
-          </FormControl>
-          <Button
-            variant="contained"
-            onClick={() =>
-              setDialougeData({
-                open: true,
-                type: "create",
-                data: null,
-                title: "Add Notes",
-              })
-            }
+        <FormControl size="small" sx={{ minWidth: 200 }}>
+          <InputLabel>Category</InputLabel>
+          <Select
+            value={category}
+            label="Category"
+            onChange={(e) => setCategory(e.target.value)}
           >
-            Add note
-          </Button>
-        </Box>
-        <TableContainer sx={{ maxHeight: 440 }}>
+            <MenuItem value="">All</MenuItem>
+            <MenuItem value="work">Work</MenuItem>
+            <MenuItem value="personal">Personal</MenuItem>
+            <MenuItem value="ideas">Ideas</MenuItem>
+          </Select>
+        </FormControl>
+        <Button
+          variant="contained"
+          onClick={() =>
+            setDialougeData({
+              open: true,
+              type: "create",
+              data: null,
+              title: "Add Notes",
+            })
+          }
+        >
+          Add note
+        </Button>
+      </Box>
+      {/* <TableContainer sx={{ maxHeight: 440 }}>
           <Table stickyHeader aria-label="sticky table">
             <TableHead>
               <TableRow>
@@ -257,8 +256,113 @@ export default function NoteList() {
             setRowsPerPage(parseInt(e.target.value, 10));
             setPage(0);
           }}
-        />
-      </Paper>
-    </>
+        /> */}
+
+      <Grid container spacing={2} sx={{ justifyContent: "start", }}>
+        {notes.map((row: Note, index) => (
+          <Grid
+            sx={{
+              borderRadius: 2,
+              border: 1,
+              padding: 2,
+              cursor: "pointer",
+              "&:hover": { boxShadow: 6 },
+              width: "100%",
+              minWidth: 420,
+            }}
+            size={{ xs: 12, md: 5, lg: 4 }}
+            onMouseEnter={() => setHoveredIndex(index)}
+            onMouseLeave={() => setHoveredIndex(null)}
+            key={row._id}
+          >
+            <Box
+              sx={{
+                position: "relative",
+                display: "flex",
+                flexDirection: "column",
+                // height: "100%",
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setDialougeData({
+                  open: true,
+                  type: "edit",
+                  data: row,
+                  title: "Edit Notes",
+                });
+              }}
+            >
+              {hoveredIndex === index && (
+                <IconButton
+                  sx={{
+                    position: "absolute",
+                    top: -3,
+                    right: -3,
+                    display: "flex",
+                    gap: 1,
+                  }}
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleTogglePin(row);
+                  }}
+                  color={row?.isPinned ? "primary" : "default"}
+                >
+                  <PushPinIcon fontSize="small" />
+                </IconButton>
+              )}
+
+              <Typography variant="h5">{truncate(row?.title, 40)}</Typography>
+              <Typography variant="subtitle2">
+                {truncate(row?.content, 100)}
+              </Typography>
+
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  margin: 0,
+                  padding: 0,
+                  minHeight: 30,
+                }}
+              >
+                {hoveredIndex === index && (
+                  <IconButton
+                    sx={{ padding: 0 }}
+                    size="medium"
+                    color="error"
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      const result = await confirmDeleteAlert({
+                        title: "Delete Note?",
+                        text: "This note will be permanently deleted",
+                      });
+
+                      if (result.isConfirmed) {
+                        dispatch(deleteNote(row._id));
+                      }
+                    }}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                )}
+              </Box>
+            </Box>
+          </Grid>
+        ))}
+      </Grid>
+      {totalPages > 1 && (
+  <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+    <Pagination
+      count={totalPages}
+      page={page + 1} 
+      onChange={(e, value) => setPage(value - 1)}
+      color="primary"
+      shape="rounded"
+    />
+  </Box>
+)}
+
+    </Box>
   );
 }
