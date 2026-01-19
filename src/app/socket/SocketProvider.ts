@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { socket } from "../socket";
+import { socket } from ".";
 import { socketNoteCreated, socketNoteDeleted, socketNoteUpdated } from "../redux/slices/note-slice";
 
 

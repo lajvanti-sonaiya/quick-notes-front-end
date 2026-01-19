@@ -8,7 +8,6 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
-import { useDispatch, useSelector } from "react-redux";
 import { deleteNote, fetchNotes, updateNote } from "../redux/slices/note-slice";
 import NoteDialog from "./common/NoteDialog";
 import { Box } from "@mui/system";
@@ -30,8 +29,13 @@ import MenuItem from "@mui/material/MenuItem";
 import EditIcon from "@mui/icons-material/Edit";
 import debounce from "lodash.debounce";
 import CloseIcon from "@mui/icons-material/Close";
+import { Note } from "@/types/notes/note";
+import { AppDispatch, RootState } from "@/types/notes/note-redux";
+import { TableColumn } from "@/types/components/table";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
+import { DialogState } from "@/types/components/note-dialouge";
 
-const columns = [
+const columns: TableColumn[] = [
   { id: "pin", label: "pin" },
 
   { id: "title", label: "title" },
@@ -59,32 +63,32 @@ export default function NoteList() {
   const [category, setCategory] = useState("");
   const [search, setSearch] = useState("");
 
-  const dispatch = useDispatch();
-  const { notes ,total} = useSelector((state) => state.note);
-  const [dialougeData, setDialougeData] = useState({
+  const dispatch = useAppDispatch();
+  const { notes, total } = useAppSelector((state: RootState) => state.note);
+  const [dialougeData, setDialougeData] = useState<DialogState>({
     open: false,
-    type: "add",
+    type: "create",
     data: null,
     title: "",
   });
 
-  const handleTogglePin = (note) => {
+  const handleTogglePin = (note: Note) => {
     dispatch(
       updateNote({
         id: note._id,
         data: { isPinned: !note.isPinned },
-      })
+      }),
     );
   };
 
   const debounceSearch = useMemo(
     () =>
-      debounce((value) => {
+      debounce((value: string) => {
         dispatch(
-          fetchNotes({ category, search: value, page, limit: rowsPerPage })
+          fetchNotes({ category, search: value, page, limit: rowsPerPage }),
         );
       }, 500),
-    [category]
+    [category],
   );
 
   useEffect(() => {
@@ -96,12 +100,8 @@ export default function NoteList() {
 
   useEffect(() => {
     dispatch(fetchNotes({ category, search, page, limit: rowsPerPage }));
-  }, [category,page, rowsPerPage]);
+  }, [category, page, rowsPerPage]);
 
-console.log("total",total)
-console.log("rowsPerPage",rowsPerPage)
-console.log("page",page)
-  
   return (
     <>
       <NoteDialog
@@ -190,7 +190,7 @@ console.log("page",page)
               </TableRow>
             </TableHead>
             <TableBody>
-              {notes.map((row, index) => {
+              {notes.map((row: Note, index) => {
                 return (
                   <TableRow hover role="checkbox" key={index}>
                     <TableCell align="center">
@@ -202,17 +202,17 @@ console.log("page",page)
                         <PushPinIcon fontSize="small" />
                       </IconButton>
                     </TableCell>
-                    <TableCell key={row.id}>{row?.title}</TableCell>
+                    <TableCell>{row?.title}</TableCell>
 
-                    <TableCell key={row.id}>{row?.content}</TableCell>
+                    <TableCell>{row?.content}</TableCell>
 
-                    <TableCell key={row.id}>{row?.category}</TableCell>
+                    <TableCell>{row?.category}</TableCell>
 
-                    <TableCell key={row.id}>
+                    <TableCell key={row?._id}>
                       {new Date(row.createdAt).toLocaleString()}
                     </TableCell>
 
-                    <TableCell key={row.id}>
+                    <TableCell key={index}>
                       <IconButton
                         onClick={() => {
                           setDialougeData({

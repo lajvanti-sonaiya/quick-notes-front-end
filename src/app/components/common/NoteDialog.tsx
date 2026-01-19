@@ -7,13 +7,14 @@ import DialogTitle from "@mui/material/DialogTitle";
 import { useFormik } from "formik";
 import { MenuItem, TextField } from "@mui/material";
 import { noteSchema } from "@/app/validation/note-validation";
-import { useDispatch, useSelector } from "react-redux";
 import { createNote, updateNote } from "@/app/redux/slices/note-slice";
 import CircularProgress from "@mui/material/CircularProgress";
+import { useAppSelector ,useAppDispatch} from "@/app/redux/hooks";
+import { NoteDialogProps } from "@/types/notes/note";
 
-const NoteDialog = ({ open, title, data, handleClose, type }) => {
-  const dispatch = useDispatch();
-const { loading } = useSelector((state) => state.note);
+const NoteDialog = ({ open, title, data, handleClose, type }:NoteDialogProps) => {
+  const dispatch = useAppDispatch();
+const { loading } = useAppSelector((state) => state.note);
 
   const {
     values,
@@ -67,7 +68,7 @@ const { loading } = useSelector((state) => state.note);
             value={values.title}
             onChange={handleChange}
             error={touched.title && Boolean(errors.title)}
-            helperText={touched.title && errors.title}
+            helperText={touched.title && String(errors.title??"")}
           />
 
           <TextField
@@ -80,7 +81,7 @@ const { loading } = useSelector((state) => state.note);
             value={values.content}
             onChange={handleChange}
             error={touched.content && Boolean(errors.content)}
-            helperText={touched.content && errors.content}
+            helperText={touched.content && String(errors.content)}
           />
 
           <TextField
@@ -92,7 +93,7 @@ const { loading } = useSelector((state) => state.note);
             value={values.category}
             onChange={handleChange}
             error={touched.category && Boolean(errors.category)}
-            helperText={touched.category && errors.category}
+            helperText={touched.category && String(errors.category)}
           >
             <MenuItem value="personal">Personal</MenuItem>
             <MenuItem value="work">Work</MenuItem>

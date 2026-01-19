@@ -4,9 +4,11 @@ import {
   deleteNoteFormState,
   updateNoteToState,
 } from "@/app/utills/note-reducer-helpers";
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { Note } from "@/types/notes/note";
+import { FetchNotesPayload, NoteState, UpdateNotePayload } from "@/types/notes/note-redux";
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-const initialState = {
+const initialState :NoteState= {
   notes: [],
   total: 0,
   fetchLoading: true,
@@ -15,7 +17,7 @@ const initialState = {
 };
 
 //frtch all
-export const fetchNotes = createAsyncThunk(
+export const fetchNotes = createAsyncThunk<{notes: Note[], total:number},FetchNotesPayload,{rejectValue:string} >(
   "notes/fetchNotes",
   async (
     { category = "", search = "", page = 0, limit = 10 },
@@ -39,7 +41,7 @@ export const fetchNotes = createAsyncThunk(
   }
 );
 // create note
-export const createNote = createAsyncThunk(
+export const createNote = createAsyncThunk<Note,Partial<Note>>(
   "notes/createNote",
   async (noteData, { rejectWithValue }) => {
     try {
@@ -54,7 +56,7 @@ export const createNote = createAsyncThunk(
 );
 
 // update note
-export const updateNote = createAsyncThunk(
+export const updateNote = createAsyncThunk<Note,UpdateNotePayload>(
   "notes/updateNote",
   async ({ id, data }, { rejectWithValue }) => {
     try {
@@ -69,7 +71,7 @@ export const updateNote = createAsyncThunk(
 );
 
 // delete note
-export const deleteNote = createAsyncThunk(
+export const deleteNote = createAsyncThunk<Note,string,{rejectValue:Note}>(
   "notes/deleteNote",
   async (id, { rejectWithValue }) => {
     try {
@@ -88,15 +90,15 @@ const noteSlice = createSlice({
   name: "note",
   initialState,
   reducers: {
-    socketNoteCreated: (state, action) => {
+    socketNoteCreated: (state, action:PayloadAction<Note>) => {
       addNoteToState(state, action.payload);
     },
 
-    socketNoteUpdated: (state, action) => {
+    socketNoteUpdated: (state, action:PayloadAction<Note>) => {
       updateNoteToState(state, action.payload);
     },
 
-    socketNoteDeleted: (state, action) => {
+    socketNoteDeleted: (state, action:PayloadAction<Note>) => {
       deleteNoteFormState(state, action.payload);
     },
   },
@@ -107,13 +109,13 @@ const noteSlice = createSlice({
       .addCase(fetchNotes.pending, (state, action) => {
         state.fetchLoading = true;
       })
-      .addCase(fetchNotes.fulfilled, (state, action) => {
+      .addCase(fetchNotes.fulfilled, (state,action ) => {
         console.log("action.payload", action.payload);
         state.notes = action.payload.notes;
         state.total = action.payload.total;
       })
       .addCase(fetchNotes.rejected, (state, action) => {
-        state.error = action.payload.message;
+        state.error = action.payload;
       });
 
     //create note
@@ -129,7 +131,7 @@ const noteSlice = createSlice({
           addNoteToState(state, action.payload);
       })
       .addCase(createNote.rejected, (state, action) => {
-        (state.loading = false), (state.error = action.payload.message);
+        (state.loading = false), (state.error = action.payload);
       })
 
       //update note
@@ -141,7 +143,7 @@ const noteSlice = createSlice({
         updateNoteToState(state, action.payload);
       })
       .addCase(updateNote.rejected, (state, action) => {
-        state.loading = false, (state.error = action.payload.message);
+        state.loading = false, (state.error = action.payload);
       })
 
       //delete note
@@ -152,7 +154,7 @@ const noteSlice = createSlice({
         deleteNoteFormState(state, action.payload);
       })
       .addCase(deleteNote.rejected, (state, action) => {
-        (state.loading = false), (state.error = action.payload.message);
+        (state.loading = false), (state.error = action.payload);
       });
   },
 });
