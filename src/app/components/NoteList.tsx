@@ -31,7 +31,7 @@ import debounce from "lodash.debounce";
 import CloseIcon from "@mui/icons-material/Close";
 import { Note } from "@/types/notes/note";
 import { AppDispatch, RootState } from "@/types/notes/note-redux";
-import { TableColumn } from "@/types/components/table";
+import { TableColumn } from "@/types/components/note-table";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { DialogState } from "@/types/components/note-dialouge";
 
