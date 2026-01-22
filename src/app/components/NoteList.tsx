@@ -22,21 +22,15 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import EditSquareIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { confirmDeleteAlert } from "../utills/confirm-alert";
-import PushPinIcon from "@mui/icons-material/PushPin";
-import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
-import EditIcon from "@mui/icons-material/Edit";
 import debounce from "lodash.debounce";
 import CloseIcon from "@mui/icons-material/Close";
 import { Note } from "@/types/notes/note";
-import { AppDispatch, RootState } from "@/types/notes/note-redux";
+import {  RootState } from "@/types/notes/note-redux";
 import { TableColumn } from "@/types/components/note-table";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { DialogState } from "@/types/components/note-dialouge";
-import { truncate } from "../utills/turncate-text";
+import NoteCard from "./common/NoteCard";
 
 const columns: TableColumn[] = [
   { id: "pin", label: "pin" },
@@ -65,8 +59,7 @@ export default function NoteList() {
   const [rowsPerPage, setRowsPerPage] = useState<number>(9);
   const [category, setCategory] = useState<string>("");
   const [search, setSearch] = useState<string>("");
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  
+
   const dispatch = useAppDispatch();
   const { notes, total } = useAppSelector((state: RootState) => state.note);
   const totalPages = Math.ceil(total / rowsPerPage);
@@ -76,15 +69,6 @@ export default function NoteList() {
     data: null,
     title: "",
   });
-
-  const handleTogglePin = (note: Note) => {
-    dispatch(
-      updateNote({
-        id: note._id,
-        data: { isPinned: !note.isPinned },
-      }),
-    );
-  };
 
   const debounceSearch = useMemo(
     () =>
@@ -107,25 +91,9 @@ export default function NoteList() {
     dispatch(fetchNotes({ category, search, page, limit: rowsPerPage }));
   }, [category, page, rowsPerPage]);
 
-  console.log("hoveredIndex", hoveredIndex);
-
   return (
-    <Box sx={{padding:4, display:"flex", flexDirection:
-      "column", gap:3}}>
-      <NoteDialog
-        open={dialougeData.open}
-        type={dialougeData.type}
-        title={dialougeData.title}
-        data={dialougeData.data}
-        handleClose={() => {
-          setDialougeData((old) => ({
-            ...old,
-            open: false,
-          }));
-        }}
-      />
-
-      <Box sx={{ display: "flex", justifyContent: "center", gap: 3}}>
+    <Box sx={{ padding: 4, display: "flex", flexDirection: "column", gap: 3 }}>
+      <Box sx={{ display: "flex", justifyContent: "center", gap: 3 }}>
         <TextField
           size="small"
           placeholder="Search notes..."
@@ -258,111 +226,45 @@ export default function NoteList() {
           }}
         /> */}
 
-      <Grid container spacing={2} sx={{ justifyContent: "start", }}>
-        {notes.map((row: Note, index) => (
-          <Grid
-            sx={{
-              borderRadius: 2,
-              border: 1,
-              padding: 2,
-              cursor: "pointer",
-              "&:hover": { boxShadow: 6 },
-              width: "100%",
-              minWidth: 420,
-            }}
-            size={{ xs: 12, md: 5, lg: 4 }}
-            onMouseEnter={() => setHoveredIndex(index)}
-            onMouseLeave={() => setHoveredIndex(null)}
-            key={row._id}
-          >
-            <Box
-              sx={{
-                position: "relative",
-                display: "flex",
-                flexDirection: "column",
-                // height: "100%",
-              }}
-              onClick={(e) => {
-                e.stopPropagation();
-                setDialougeData({
-                  open: true,
-                  type: "edit",
-                  data: row,
-                  title: "Edit Notes",
-                });
-              }}
-            >
-              {hoveredIndex === index && (
-                <IconButton
-                  sx={{
-                    position: "absolute",
-                    top: -3,
-                    right: -3,
-                    display: "flex",
-                    gap: 1,
-                  }}
-                  size="small"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleTogglePin(row);
-                  }}
-                  color={row?.isPinned ? "primary" : "default"}
-                >
-                  <PushPinIcon fontSize="small" />
-                </IconButton>
-              )}
+      <Typography>Pinned note</Typography>
+      <Grid container spacing={2} sx={{ justifyContent: "start" }}>
+        {notes
+          .filter((note) => note.isPinned == true)
+          .map((row: Note, index) => (
+            <NoteCard
+              row={row}
+              index={index}
+              dialougeData={dialougeData}
+              setDialougeData={setDialougeData}
+            />
+          ))}
+      </Grid>
 
-              <Typography variant="h5">{truncate(row?.title, 40)}</Typography>
-              <Typography variant="subtitle2">
-                {truncate(row?.content, 100)}
-              </Typography>
+      <Typography> Others</Typography>
 
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "flex-end",
-                  margin: 0,
-                  padding: 0,
-                  minHeight: 30,
-                }}
-              >
-                {hoveredIndex === index && (
-                  <IconButton
-                    sx={{ padding: 0 }}
-                    size="medium"
-                    color="error"
-                    onClick={async (e) => {
-                      e.stopPropagation();
-                      const result = await confirmDeleteAlert({
-                        title: "Delete Note?",
-                        text: "This note will be permanently deleted",
-                      });
-
-                      if (result.isConfirmed) {
-                        dispatch(deleteNote(row._id));
-                      }
-                    }}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                )}
-              </Box>
-            </Box>
-          </Grid>
-        ))}
+      <Grid container spacing={2} sx={{ justifyContent: "start" }}>
+        {notes
+          .filter((note) => note.isPinned == false)
+          .map((row: Note, index) => (
+            <NoteCard
+              row={row}
+              index={index}
+              dialougeData={dialougeData}
+              setDialougeData={setDialougeData}
+            />
+          ))}
       </Grid>
       {totalPages > 1 && (
-  <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
-    <Pagination
-      count={totalPages}
-      page={page + 1} 
-      onChange={(e, value) => setPage(value - 1)}
-      color="primary"
-      shape="rounded"
-    />
-  </Box>
-)}
-
+        <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+          <Pagination
+            count={totalPages}
+            page={page + 1}
+            onChange={(e, value) => setPage(value - 1)}
+            color="primary"
+            shape="rounded"
+          />
+        </Box>
+      )}
     </Box>
   );
 }
