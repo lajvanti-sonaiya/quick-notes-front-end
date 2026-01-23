@@ -14,7 +14,7 @@ const NoteCard = ({
   row,
   index,
   dialougeData,
-  setDialougeData
+  setDialougeData,
 }: {
   row: Note;
   index: number;
@@ -34,8 +34,23 @@ const NoteCard = ({
     );
   };
 
+  const handleDelete = async (
+    e: React.MouseEvent<HTMLButtonElement>,
+    row: Note,
+  ) => {
+    e.stopPropagation();
+    const result = await confirmDeleteAlert({
+      title: "Delete Note?",
+      text: "This note will be permanently deleted",
+    });
+
+    if (result.isConfirmed) {
+      dispatch(deleteNote(row._id));
+    }
+  };
+
   return (
-    <>
+    <Box>
       <NoteDialog
         open={dialougeData.open}
         type={dialougeData.type}
@@ -120,17 +135,7 @@ const NoteCard = ({
                 sx={{ padding: 0 }}
                 size="medium"
                 color="error"
-                onClick={async (e) => {
-                  e.stopPropagation();
-                  const result = await confirmDeleteAlert({
-                    title: "Delete Note?",
-                    text: "This note will be permanently deleted",
-                  });
-
-                  if (result.isConfirmed) {
-                    dispatch(deleteNote(row._id));
-                  }
-                }}
+                onClick={(e) => handleDelete(e, row)}
               >
                 <DeleteIcon />
               </IconButton>
@@ -138,7 +143,7 @@ const NoteCard = ({
           </Box>
         </Box>
       </Grid>
-    </>
+    </Box>
   );
 };
 

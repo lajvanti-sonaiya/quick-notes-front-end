@@ -38,23 +38,27 @@ const NoteDialog = ({
       category: data?.category || "",
     },
     validationSchema: noteSchema,
-    onSubmit: async (values) => {
-      try {
-        if (type === "create") {
-          dispatch(createNote(values));
-        }
-
-        if (type === "edit") {
-          dispatch(updateNote({ id: data._id, data: values }));
-        }
-
-        resetForm();
-        handleClose();
-      } catch (error) {
-        console.error("Submit failed:", error);
-      }
+    onSubmit: async () => {
+      handleSubmitNote();
     },
   });
+
+  const handleSubmitNote = () => {
+    try {
+      if (type === "create") {
+        dispatch(createNote(values));
+      }
+
+      if (type === "edit") {
+        dispatch(updateNote({ id: data._id, data: values }));
+      }
+
+      resetForm();
+      handleClose();
+    } catch (error) {
+      console.error("Submit failed:", error);
+    }
+  };
 
   return (
     <Dialog
@@ -64,7 +68,7 @@ const NoteDialog = ({
       aria-describedby="alert-dialog-description"
     >
       <DialogTitle id="alert-dialog-title">{title}</DialogTitle>
-      <DialogContent  sx={{padding:"30px",minWidth:"400px"}}>
+      <DialogContent sx={{ padding: "30px", minWidth: "400px" }}>
         <form onSubmit={handleSubmit}>
           <TextField
             fullWidth
@@ -145,17 +149,6 @@ const NoteDialog = ({
               {type === "create" ? "Add Note" : "Update Note"}
             </Button>
 
-            {/* <Button
-  type="submit"
-  variant="contained"
-  disabled={loading}
->
-  {loading ? (
-    <CircularProgress size={22} color="inherit" />
-  ) : (
-    type === "create" ? "Add Note" : "Update Note"
-  )}
-</Button> */}
           </DialogActions>
         </form>
       </DialogContent>

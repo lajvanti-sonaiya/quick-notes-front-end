@@ -26,7 +26,7 @@ import MenuItem from "@mui/material/MenuItem";
 import debounce from "lodash.debounce";
 import CloseIcon from "@mui/icons-material/Close";
 import { Note } from "@/types/notes/note";
-import {  RootState } from "@/types/notes/note-redux";
+import { RootState } from "@/types/notes/note-redux";
 import { TableColumn } from "@/types/components/note-table";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { DialogState } from "@/types/components/note-dialouge";
@@ -247,6 +247,7 @@ export default function NoteList() {
           .filter((note) => note.isPinned == false)
           .map((row: Note, index) => (
             <NoteCard
+              key={index}
               row={row}
               index={index}
               dialougeData={dialougeData}
