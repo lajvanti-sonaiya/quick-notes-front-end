@@ -38,14 +38,18 @@ const NoteCard = ({
     e: React.MouseEvent<HTMLButtonElement>,
     row: Note,
   ) => {
-    e.stopPropagation();
-    const result = await confirmDeleteAlert({
-      title: "Delete Note?",
-      text: "This note will be permanently deleted",
-    });
+    try {
+      e.stopPropagation();
+      const result = await confirmDeleteAlert({
+        title: "Delete Note?",
+        text: "This note will be permanently deleted",
+      });
 
-    if (result.isConfirmed) {
-      dispatch(deleteNote(row._id));
+      if (result.isConfirmed) {
+        dispatch(deleteNote(row._id));
+      }
+    } catch (error) {
+      console.log("🚀 ~ handleDelete ~ error:", error);
     }
   };
 

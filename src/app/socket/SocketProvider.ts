@@ -27,7 +27,6 @@ export default function SocketProvider({ children }) {
     });
 
     socket.on("note:deleted", (note) => {
-      console.log("🚀 ~ SocketProvider ~ note:", note)
       dispatch(socketNoteDeleted(note));
     });
 

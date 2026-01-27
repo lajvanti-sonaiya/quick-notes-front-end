@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { Box, Button, Typography } from '@mui/material';
 import NoteList from "./components/NoteList";
 

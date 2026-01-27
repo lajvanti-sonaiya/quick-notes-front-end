@@ -110,7 +110,6 @@ const noteSlice = createSlice({
         state.fetchLoading = true;
       })
       .addCase(fetchNotes.fulfilled, (state,action ) => {
-        console.log("action.payload", action.payload);
         state.notes = action.payload.notes;
         state.total = action.payload.total;
       })
@@ -125,7 +124,6 @@ const noteSlice = createSlice({
         state.loading = true;
       })
       .addCase(createNote.fulfilled, (state, action) => {
-        console.log("action.payload",action.payload)
         state.loading = false,
           //   (state.notes = [action.payload.data, ...state.notes]);
           addNoteToState(state, action.payload);
