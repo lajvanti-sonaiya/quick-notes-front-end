@@ -21,6 +21,7 @@ import { RootState } from "@/types/notes/note-redux";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { DialogState } from "@/types/components/note-dialouge";
 import NoteCard from "./common/NoteCard";
+import NoteDialog from "./common/NoteDialog";
 
 export default function NoteList() {
   const [page, setPage] = useState(0);
@@ -61,6 +62,18 @@ export default function NoteList() {
 
   return (
     <Box sx={{ padding: 4, display: "flex", flexDirection: "column", gap: 3 }}>
+      <NoteDialog
+              open={dialougeData.open}
+              type={dialougeData.type}
+              title={dialougeData.title}
+              data={dialougeData.data}
+              handleClose={() => {
+                setDialougeData((old) => ({
+                  ...old,
+                  open: false,
+                }));
+              }}
+            />
       <Box sx={{ display: "flex", justifyContent: "center", gap: 3 }}>
         <TextField
           size="small"
